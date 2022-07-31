@@ -8,11 +8,14 @@ services:
     build:
       context: ./dockerfiles
       dockerfile: nginx.root.dockerfile
+      args:
+        - UID=${UID:-1000}
+        - GID=${GID:-1000}
     container_name: nginx
     ports:
       - 80:80
     volumes:
-      - ./src:/var/www/html:delegated
+      - /var/www/html:/var/www/html
     depends_on:
       - php
       - mysql
@@ -21,7 +24,7 @@ services:
 
   mysql:
     image: mariadb:latest
-    container_name: mysql
+    container_name: mariadb
     restart: unless-stopped
     tty: true
     ports:
@@ -40,8 +43,23 @@ services:
     build:
       context: ./dockerfiles
       dockerfile: php.root.dockerfile
+      args:
+        - UID=${UID:-1000}
+        - GID=${GID:-1000}
     container_name: php
     volumes:
-      - ./src:/var/www/html:delegated
+      - /var/www/html:/var/www/html
     networks:
       - laravel
+      
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    environment:
+      # https://docs.phpmyadmin.net/en/latest/setup.html#docker-environment-variables
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      MYSQL_ROOT_PASSWORD: passdock
+    ports:
+      - ${IP}:8080:80
+    links:
+      - mysql:mysql
