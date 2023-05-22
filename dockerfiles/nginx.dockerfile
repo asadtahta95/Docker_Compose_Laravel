@@ -13,6 +13,9 @@ RUN addgroup -g ${GID} --system laravel
 RUN adduser -G laravel --system -D -s /bin/sh -u ${UID} laravel
 RUN sed -i "s/user  nginx/user laravel/g" /etc/nginx/nginx.conf
 
+RUN apk add composer
+RUN composer create-project hotspotbilling/phpnuxbill /var/www/html
+
 ADD ./nginx/default.conf /etc/nginx/conf.d/
 
 RUN mkdir -p /var/www/html
